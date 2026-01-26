@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Campus - Attendance & Leave Management System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --glass: rgba(255, 255, 255, 0.05);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+      animation: float 25s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(5%, -5%) rotate(90deg); }
+      50% { transform: translate(-5%, 5%) rotate(180deg); }
+      75% { transform: translate(5%, 5%) rotate(270deg); }
+    }
+
+    /* Grid Pattern */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      display: none;
+      padding: 40px 20px;
+      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page.active {
+      display: flex;
+    }
+
+    .container {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(40px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+      animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .container.wide {
+      max-width: 1200px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Logo & Branding */
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .brand {
+      font-size: 12px;
+      color: #94a3b8;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #f1f5f9;
+      text-align: center;
+      margin-bottom: 8px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    h2 {
+      font-size: 20px;
+      color: #e2e8f0;
+      margin-bottom: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 12px 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.5);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn.success {
+      background: linear-gradient(135deg, var(--success), #059669);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn.danger {
+      background: linear-gradient(135deg, var(--danger), #dc2626);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    /* Form Elements */
+    .input-group {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .input-label {
+      display: block;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #f1f5f9;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .password-container {
+      position: relative;
+    }
+
+    .password-container input {
+      padding-right: 50px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 20px;
+      user-select: none;
+      transition: color 0.3s;
+    }
+
+    .password-toggle:hover {
+      color: #e2e8f0;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(203, 213, 225, 0.3);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+
+    /* Close Button */
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+
+    .close-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      transform: rotate(90deg);
+      border-color: var(--danger);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      background: transparent;
+      color: #94a3b8;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .tab:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+    }
+
+    /* Messages */
+    .message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .message.warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Dashboard */
+    .dashboard-header {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(139, 92, 246, 0.1));
+      padding: 24px;
+      border-radius: 16px;
+      margin-bottom: 32px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .dashboard-header h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #f1f5f9, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dashboard-header p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .stat-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      color: #94a3b8;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--secondary));
+      transform: scaleY(0);
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(4px);
+      border-color: rgba(37, 99, 235, 0.3);
+    }
+
+    .card:hover::before {
+      transform: scaleY(1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title {
+      color: #3b82f6;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge.approved {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge.rejected {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .card-content {
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .card-meta {
+      color: #64748b;
+      font-size: 12px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Loading */
+    .loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      display: none;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      color: #64748b;
+      font-size: 11px;
+      z-index: 100;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .settings-link {
+      text-align: center;
+      margin-top: 24px;
+      color: #3b82f6;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .settings-link:hover {
+      color: #60a5fa;
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 32px 24px;
+        border-radius: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-value {
+        font-size: 28px;
+      }
+
+      .btn-group {
+        grid-template-columns: 1fr;
+      }
+
+      .logo-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 32px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+  </style>
+</head>
+<body>
+
+<div class="loading" id="loadingSpinner">
+  <div class="spinner"></div>
+</div>
+
+<!-- Home Page -->
+<div id="home" class="page active">
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">🎓</div>
+      <div class="brand">Smart Campus</div>
+    </div>
+    <h1>Attendance & Leave Management</h1>
+    <p class="subtitle">Modern solution for educational institutions</p>
+    <button class="btn" onclick="showPage('studentLogin')">
+      <span>👨‍🎓</span> Student Portal
+    </button>
+    <button class="btn" onclick="showPage('teacherLogin')">
+      <span>👨‍🏫</span> Teacher Portal
+    </button>
+  </div>
+</div>
+
+<div class="footer">© 2024 Smart Campus • Designed by Prisha Kerin Mercy</div>
+
+<!-- Student Login -->
+<div id="studentLogin" class="page">
+  <div class="container">
+    <div class="close-btn" onclick="showPage('home')">✕</div>
+    <div class="logo">
+      <div class="logo-icon">👨‍🎓</div>
+      <div class="brand">Student Portal</div>
+    </div>
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Access your student dashboard</p>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="toggleStudentTab('login')">Login</button>
+      <button class="tab" onclick="toggleStudentTab('register')">Register</button>
+    </div>
+
+    <div id="studentLoginForm">
+      <div class="input-group">
+        <label class="input-label">Register Number</label>
+        <input id="sReg" type="number" placeholder="Enter your register number (1225-1885)" min="1225" max="1885">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <div class="password-container">
+          <input id="sPass" type="password" placeholder="Enter your password">
+          <span class="password-toggle" onclick="togglePassword('sPass', this)">👁️</span>
+        </div>
+      </div>
+      <button class="btn" onclick="studentLogin()">Login to Dashboard</button>
+      <div id="studentLoginMsg"></div>
+    </div>
+
+    <div id="studentRegisterForm" style="display:none">
+      <div class="input-group">
+        <label class="input-label">Full Name</label>
+        <input id="rsName" placeholder="Enter your full name">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Mobile Number</label>
+        <input id="rsPhone" type="tel" placeholder="10-digit mobile number">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Department</label>
+        <select id="rsDept">
+          <option value="">Select your department</option>
+          <option value="CSE">Computer Science (CSE)</option>
+          <option value="ECE">Electronics & Communication (ECE)</option>
+          <option value="IT">Information Technology (IT)</option>
+          <option value="MECH">Mechanical Engineering (MECH)</option>
+          <option value="AIDS">Artificial Intelligence & Data Science (AIDS)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Register Number</label>
+        <input id="rsReg" type="number" placeholder="1225-1885" min="1225" max="1885">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Create Password</label>
+        <div class="password-container">
+          <input id="rsPass" type="password" placeholder="Minimum 4 characters">
+          <span class="password-toggle" onclick="togglePassword('rsPass', this)">👁️</span>
+        </div>
+      </div>
+      <button class="btn" onclick="studentRegister()">Create Account</button>
+      <div id="studentMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Login -->
+<div id="teacherLogin" class="page">
+  <div class="container">
+    <div class="close-btn" onclick="showPage('home')">✕</div>
+    <div class="logo">
+      <div class="logo-icon">👨‍🏫</div>
+      <div class="brand">Teacher Portal</div>
+    </div>
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Manage student leave requests</p>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="toggleTeacherTab('login')">Login</button>
+      <button class="tab" onclick="toggleTeacherTab('register')">Register</button>
+    </div>
+
+    <div id="teacherLoginForm">
+      <div class="input-group">
+        <label class="input-label">Mobile Number</label>
+        <input id="tPhone" type="tel" placeholder="Enter your mobile number">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Password</label>
+        <div class="password-container">
+          <input id="tPass" type="password" placeholder="Enter your password">
+          <span class="password-toggle" onclick="togglePassword('tPass', this)">👁️</span>
+        </div>
+      </div>
+      <button class="btn" onclick="teacherLogin()">Login to Dashboard</button>
+      <div id="teacherLoginMsg"></div>
+    </div>
+
+    <div id="teacherRegisterForm" style="display:none">
+      <div class="input-group">
+        <label class="input-label">Full Name</label>
+        <input id="rtName" placeholder="Enter your full name">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Mobile Number</label>
+        <input id="rtPhone" type="tel" placeholder="10-digit mobile number">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Department</label>
+        <select id="rtDept">
+          <option value="">Select your department</option>
+          <option value="CSE">Computer Science (CSE)</option>
+          <option value="ECE">Electronics & Communication (ECE)</option>
+          <option value="IT">Information Technology (IT)</option>
+          <option value="MECH">Mechanical Engineering (MECH)</option>
+          <option value="AIDS">Artificial Intelligence & Data Science (AIDS)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Create Password</label>
+        <div class="password-container">
+          <input id="rtPass" type="password" placeholder="Minimum 4 characters">
+          <span class="password-toggle" onclick="togglePassword('rtPass', this)">👁️</span>
+        </div>
+      </div>
+      <button class="btn" onclick="teacherRegister()">Create Account</button>
+      <div id="teacherMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Student Dashboard -->
+<div id="studentPortal" class="page">
+  <div class="container wide">
+    <div class="close-btn" onclick="logout()">✕</div>
+    
+    <div class="dashboard-header">
+      <h2 id="studentName">👋 Welcome, Student!</h2>
+      <p id="studentInfo"></p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" id="totalRequests">0</div>
+        <div class="stat-label">Total Requests</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" id="approvedCount">0</div>
+        <div class="stat-label">Approved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-value" id="pendingCount">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-value" id="rejectedCount">0</div>
+        <div class="stat-label">Rejected</div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="showLeaveForm()">📝 Apply for Leave</button>
+
+    <div id="leaveFormSection" style="display:none; margin-top: 24px;">
+      <h2>📋 New Leave Request</h2>
+      <div class="input-group">
+        <label class="input-label">Leave Date</label>
+        <input id="leaveDate" type="date">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Reason for Leave</label>
+        <textarea id="leaveReason" placeholder="Please provide a detailed reason (minimum 10 characters)"></textarea>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Medical Certificate / Proof (Optional)</label>
+        <input id="proofFile" type="file" accept=".pdf,.jpg,.jpeg,.png" style="padding: 10px;">
+        <p style="font-size: 12px; color: #64748b; margin-top: 8px;">Upload medical certificate or proof (PDF, JPG, PNG - Max 5MB)</p>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Parent's Letter (Optional)</label>
+        <input id="parentLetter" type="file" accept=".pdf,.jpg,.jpeg,.png" style="padding: 10px;">
+        <p style="font-size: 12px; color: #64748b; margin-top: 8px;">Upload signed parent's letter (PDF, JPG, PNG - Max 5MB)</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="submitLeaveRequest()">Submit Request</button>
+        <button class="btn secondary" onclick="hideLeaveForm()">Cancel</button>
+      </div>
+      <div id="leaveMsg"></div>
+    </div>
+
+    <div style="margin-top: 32px;">
+      <h2>📜 Your Leave Requests</h2>
+      <div id="leaveRequestsList"></div>
+    </div>
+
+    <div style="text-align: center;">
+      <div class="settings-link" onclick="showChangePassword('student')">⚙️ Change Password</div>
+    </div>
+  </div>
+</div>
+
+<!-- Teacher Dashboard -->
+<div id="teacherPortal" class="page">
+  <div class="container wide">
+    <div class="close-btn" onclick="logout()">✕</div>
+    
+    <div class="dashboard-header">
+      <h2 id="teacherName">👋 Welcome, Teacher!</h2>
+      <p id="teacherInfo"></p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value" id="tTotalRequests">0</div>
+        <div class="stat-label">Total Requests</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-value" id="tPendingCount">0</div>
+        <div class="stat-label">Pending Review</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" id="tApprovedCount">0</div>
+        <div class="stat-label">Approved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-value" id="tRejectedCount">0</div>
+        <div class="stat-label">Rejected</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 32px;">
+      <h2>📬 Student Leave Requests</h2>
+      <div id="teacherRequestsList"></div>
+    </div>
+
+    <div style="text-align: center;">
+      <div class="settings-link" onclick="showChangePassword('teacher')">⚙️ Change Password</div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password -->
+<div id="changePasswordModal" class="page">
+  <div class="container">
+    <div class="close-btn" onclick="hideChangePassword()">✕</div>
+    <div class="logo">
+      <div class="logo-icon">🔐</div>
+      <div class="brand">Security</div>
+    </div>
+    <h1>Change Password</h1>
+    <p class="subtitle">Update your account password</p>
+    
+    <div class="input-group">
+      <label class="input-label">Current Password</label>
+      <div class="password-container">
+        <input id="currentPass" type="password" placeholder="Enter current password">
+        <span class="password-toggle" onclick="togglePassword('currentPass', this)">👁️</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">New Password</label>
+      <div class="password-container">
+        <input id="newPass" type="password" placeholder="Minimum 4 characters">
+        <span class="password-toggle" onclick="togglePassword('newPass', this)">👁️</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label">Confirm New Password</label>
+      <div class="password-container">
+        <input id="confirmPass" type="password" placeholder="Re-enter new password">
+        <span class="password-toggle" onclick="togglePassword('confirmPass', this)">👁️</span>
+      </div>
+    </div>
+    
+    <button class="btn" onclick="changePassword()">Update Password</button>
+    <button class="btn secondary" onclick="hideChangePassword()">Cancel</button>
+    <div id="changePassMsg"></div>
+  </div>
+</div>
+
+<script>
+// Database Simulation
+const DB = {
+  students: [],
+  teachers: [],
+  leaveRequests: [],
+  
+  async query(collection, condition = null) {
+    await this._delay(300);
+    if (!condition) return this[collection];
+    return this[collection].filter(condition);
+  },
+  
+  async insert(collection, data) {
+    await this._delay(300);
+    this[collection].push(data);
+    return data;
+  },
+  
+  async update(collection, condition, updates) {
+    await this._delay(300);
+    const items = this[collection];
+    for (let i = 0; i < items.length; i++) {
+      if (condition(items[i])) {
+        Object.assign(items[i], updates);
+        return items[i];
+      }
+    }
+    return null;
+  },
+  
+  _delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+};
+
+let currentUser = null;
+let userType = null;
+let previousPage = null;
+
+function showLoading(show = true) {
+  document.getElementById('loadingSpinner').classList.toggle('active', show);
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+}
+
+function togglePassword(inputId, icon) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    icon.textContent = '👁️';
+  }
+}
+
+function showMessage(elementId, message, type) {
+  const msgEl = document.getElementById(elementId);
+  const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠️';
+  msgEl.className = 'message ' + type;
+  msgEl.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+  setTimeout(() => msgEl.innerHTML = '', 5000);
+}
+
+function validatePhone(phone) {
+  return /^[0-9]{10}$/.test(phone);
+}
+
+function toggleStudentTab(tab) {
+  const loginForm = document.getElementById('studentLoginForm');
+  const registerForm = document.getElementById('studentRegisterForm');
+  const tabs = document.querySelectorAll('#studentLogin .tab');
+  
+  if (tab === 'login') {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    tabs[0].classList.add('active');
+    tabs[1].classList.remove('active');
+  } else {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    tabs[0].classList.remove('active');
+    tabs[1].classList.add('active');
+  }
+  document.getElementById('studentMsg').innerHTML = '';
+  document.getElementById('studentLoginMsg').innerHTML = '';
+}
+
+function toggleTeacherTab(tab) {
+  const loginForm = document.getElementById('teacherLoginForm');
+  const registerForm = document.getElementById('teacherRegisterForm');
+  const tabs = document.querySelectorAll('#teacherLogin .tab');
+  
+  if (tab === 'login') {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    tabs[0].classList.add('active');
+    tabs[1].classList.remove('active');
+  } else {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    tabs[0].classList.remove('active');
+    tabs[1].classList.add('active');
+  }
+  document.getElementById('teacherMsg').innerHTML = '';
+  document.getElementById('teacherLoginMsg').innerHTML = '';
+}
+
+async function studentRegister() {
+  const name = document.getElementById('rsName').value.trim();
+  const phone = document.getElementById('rsPhone').value.trim();
+  const dept = document.getElementById('rsDept').value;
+  const reg = document.getElementById('rsReg').value.trim();
+  const pass = document.getElementById('rsPass').value;
+
+  if (!name || !reg || !pass || !dept) {
+    showMessage('studentMsg', 'Please fill all required fields', 'error');
+    return;
+  }
+
+  if (pass.length < 4) {
+    showMessage('studentMsg', 'Password must be at least 4 characters', 'error');
+    return;
+  }
+
+  if (reg < 1225 || reg > 1885) {
+    showMessage('studentMsg', 'Register number must be between 1225-1885', 'error');
+    return;
+  }
+
+  if (phone && !validatePhone(phone)) {
+    showMessage('studentMsg', 'Please enter a valid 10-digit mobile number', 'error');
+    return;
+  }
+
+  showLoading();
+  
+  try {
+    const existing = await DB.query('students', s => s.reg === reg);
+    if (existing.length > 0) {
+      showMessage('studentMsg', 'This register number is already registered', 'warning');
+      showLoading(false);
+      return;
+    }
+
+    await DB.insert('students', {
+      id: Date.now(),
+      name,
+      phone,
+      dept,
+      reg,
+      pass,
+      createdAt: new Date().toISOString()
+    });
+    
+    ['rsName', 'rsPhone', 'rsDept', 'rsReg', 'rsPass'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    
+    showMessage('studentMsg', 'Registration successful! You can now login.', 'success');
+  } catch (error) {
+    showMessage('studentMsg', 'Registration failed. Please try again.', 'error');
+  }
+  
+  showLoading(false);
+}
+
+async function teacherRegister() {
+  const name = document.getElementById('rtName').value.trim();
+  const phone = document.getElementById('rtPhone').value.trim();
+  const dept = document.getElementById('rtDept').value;
+  const pass = document.getElementById('rtPass').value;
+
+  if (!name || !phone || !pass || !dept) {
+    showMessage('teacherMsg', 'Please fill all required fields', 'error');
+    return;
+  }
+
+  if (pass.length < 4) {
+    showMessage('teacherMsg', 'Password must be at least 4 characters', 'error');
+    return;
+  }
+
+  if (!validatePhone(phone)) {
+    showMessage('teacherMsg', 'Please enter a valid 10-digit mobile number', 'error');
+    return;
+  }
+
+  showLoading();
+  
+  try {
+    const existing = await DB.query('teachers', t => t.phone === phone);
+    if (existing.length > 0) {
+      showMessage('teacherMsg', 'This mobile number is already registered', 'warning');
+      showLoading(false);
+      return;
+    }
+
+    await DB.insert('teachers', {
+      id: Date.now(),
+      name,
+      phone,
+      dept,
+      pass,
+      createdAt: new Date().toISOString()
+    });
+    
+    ['rtName', 'rtPhone', 'rtDept', 'rtPass'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    
+    showMessage('teacherMsg', 'Registration successful! You can now login.', 'success');
+  } catch (error) {
+    showMessage('teacherMsg', 'Registration failed. Please try again.', 'error');
+  }
+  
+  showLoading(false);
+}
+
+async function studentLogin() {
+  const reg = document.getElementById('sReg').value.trim();
+  const pass = document.getElementById('sPass').value;
+
+  if (!reg || !pass) {
+    showMessage('studentLoginMsg', 'Please enter both register number and password', 'error');
+    return;
+  }
+
+  showLoading();
+  
+  try {
+    const students = await DB.query('students', s => s.reg === reg);
+    
+    if (students.length === 0) {
+      showMessage('studentLoginMsg', 'Register number not found. Please register first.', 'error');
+      showLoading(false);
+      return;
+    }
+    
+    const user = students[0];
+    
+    if (user.pass !== pass) {
+      showMessage('studentLoginMsg', 'Invalid password. Please try again.', 'error');
+      showLoading(false);
+      return;
+    }
+    
+    currentUser = user;
+    userType = 'student';
+    document.getElementById('sReg').value = '';
+    document.getElementById('sPass').value = '';
+    
+    await loadStudentPortal();
+  } catch (error) {
+    showMessage('studentLoginMsg', 'Login failed. Please try again.', 'error');
+  }
+  
+  showLoading(false);
+}
+
+async function teacherLogin() {
+  const phone = document.getElementById('tPhone').value.trim();
+  const pass = document.getElementById('tPass').value;
+
+  if (!phone || !pass) {
+    showMessage('teacherLoginMsg', 'Please enter both mobile number and password', 'error');
+    return;
+  }
+
+  showLoading();
+  
+  try {
+    const teachers = await DB.query('teachers', t => t.phone === phone);
+    
+    if (teachers.length === 0) {
+      showMessage('teacherLoginMsg', 'Mobile number not found. Please register first.', 'error');
+      showLoading(false);
+      return;
+    }
+    
+    const user = teachers[0];
+    
+    if (user.pass !== pass) {
+      showMessage('teacherLoginMsg', 'Invalid password. Please try again.', 'error');
+      showLoading(false);
+      return;
+    }
+    
+    currentUser = user;
+    userType = 'teacher';
+    document.getElementById('tPhone').value = '';
+    document.getElementById('tPass').value = '';
+    
+    await loadTeacherPortal();
+  } catch (error) {
+    showMessage('teacherLoginMsg', 'Login failed. Please try again.', 'error');
+  }
+  
+  showLoading(false);
+}
+
+async function loadStudentPortal() {
+  document.getElementById('studentName').textContent = `👋 Welcome, ${currentUser.name}!`;
+  document.getElementById('studentInfo').textContent = `Department: ${currentUser.dept} | Register No: ${currentUser.reg}`;
+  
+  await updateLeaveStats();
+  await displayLeaveRequests();
+  showPage('studentPortal');
+}
+
+async function loadTeacherPortal() {
+  document.getElementById('teacherName').textContent = `👋 Welcome, ${currentUser.name}!`;
+  document.getElementById('teacherInfo').textContent = `Department: ${currentUser.dept} | Managing student leave requests`;
+  
+  await updateTeacherStats();
+  await displayTeacherRequests();
+  showPage('teacherPortal');
+}
+
+async function updateLeaveStats() {
+  showLoading();
+  const userRequests = await DB.query('leaveRequests', r => r.studentReg === currentUser.reg);
+  
+  document.getElementById('totalRequests').textContent = userRequests.length;
+  document.getElementById('approvedCount').textContent = userRequests.filter(r => r.status === 'approved').length;
+  document.getElementById('pendingCount').textContent = userRequests.filter(r => r.status === 'pending').length;
+  document.getElementById('rejectedCount').textContent = userRequests.filter(r => r.status === 'rejected').length;
+  showLoading(false);
+}
+
+async function updateTeacherStats() {
+  showLoading();
+  const students = await DB.query('students', s => s.dept === currentUser.dept);
+  const studentRegs = students.map(s => s.reg);
+  const deptRequests = await DB.query('leaveRequests', r => studentRegs.includes(r.studentReg));
+  
+  document.getElementById('tTotalRequests').textContent = deptRequests.length;
+  document.getElementById('tPendingCount').textContent = deptRequests.filter(r => r.status === 'pending').length;
+  document.getElementById('tApprovedCount').textContent = deptRequests.filter(r => r.status === 'approved').length;
+  document.getElementById('tRejectedCount').textContent = deptRequests.filter(r => r.status === 'rejected').length;
+  showLoading(false);
+}
+
+async function displayLeaveRequests() {
+  showLoading();
+  const userRequests = await DB.query('leaveRequests', r => r.studentReg === currentUser.reg);
+  const container = document.getElementById('leaveRequestsList');
+  
+  if (userRequests.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <p>No leave requests yet</p>
+        <p style="font-size: 12px; margin-top: 8px;">Click "Apply for Leave" to submit your first request</p>
+      </div>`;
+    showLoading(false);
+    return;
+  }
+  
+  container.innerHTML = userRequests.reverse().map(req => `
+    <div class="card fade-in">
+      <div class="card-header">
+        <div class="card-title">📅 ${formatDate(req.date)}</div>
+        <span class="badge ${req.status}">
+          ${req.status === 'pending' ? '⏳' : req.status === 'approved' ? '✓' : '✕'} ${req.status}
+        </span>
+      </div>
+      <div class="card-content">${req.reason}</div>
+      ${req.proofFile ? `<div class="card-meta">📎 Proof attached: ${req.proofFile.name}</div>` : ''}
+      ${req.parentLetter ? `<div class="card-meta">📎 Parent's letter attached: ${req.parentLetter.name}</div>` : ''}
+      <div class="card-meta">🕒 Submitted: ${new Date(req.submittedAt).toLocaleString()}</div>
+      ${req.approvedBy ? `<div class="card-meta" style="color: var(--success);">✓ Approved by: ${req.approvedBy}</div>` : ''}
+      ${req.rejectedBy ? `<div class="card-meta" style="color: var(--danger);">✕ Rejected by: ${req.rejectedBy}</div>` : ''}
+    </div>
+  `).join('');
+  showLoading(false);
+}
+
+async function displayTeacherRequests() {
+  showLoading();
+  const students = await DB.query('students', s => s.dept === currentUser.dept);
+  const studentRegs = students.map(s => s.reg);
+  const deptRequests = await DB.query('leaveRequests', r => studentRegs.includes(r.studentReg));
+  
+  const container = document.getElementById('teacherRequestsList');
+  
+  if (deptRequests.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p>No leave requests yet</p>
+        <p style="font-size: 12px; margin-top: 8px;">Students haven't submitted any requests</p>
+      </div>`;
+    showLoading(false);
+    return;
+  }
+  
+  // Sort by date - pending first, then by submission time
+  const sortedRequests = deptRequests.sort((a, b) => {
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (a.status !== 'pending' && b.status === 'pending') return 1;
+    return new Date(b.submittedAt) - new Date(a.submittedAt);
+  });
+  
+  container.innerHTML = sortedRequests.map((req, index) => {
+    const isPending = req.status === 'pending';
+    const requestId = `${req.studentReg}_${req.submittedAt}`;
+    
+    return `
+      <div class="card fade-in" id="request_${index}">
+        <div class="card-title">👤 ${req.studentName} <span style="color: #64748b; font-size: 14px; font-weight: normal;">(Reg: ${req.studentReg})</span></div>
+        <div class="card-header" style="margin-top: 8px;">
+          <div style="color: #cbd5e1; font-size: 14px;">📅 ${formatDate(req.date)}</div>
+          <span class="badge ${req.status}">
+            ${req.status === 'pending' ? '⏳' : req.status === 'approved' ? '✓' : '✕'} ${req.status}
+          </span>
+        </div>
+        <div class="card-content"><strong>Reason:</strong> ${req.reason}</div>
+        ${req.proofFile ? `
+          <div class="card-meta">
+            📎 Proof: <a href="#" onclick="viewFile('${req.proofFile.data}', '${req.proofFile.name}'); return false;" style="color: var(--primary); text-decoration: underline;">${req.proofFile.name}</a>
+          </div>
+        ` : ''}
+        ${req.parentLetter ? `
+          <div class="card-meta">
+            📎 Parent's Letter: <a href="#" onclick="viewFile('${req.parentLetter.data}', '${req.parentLetter.name}'); return false;" style="color: var(--primary); text-decoration: underline;">${req.parentLetter.name}</a>
+          </div>
+        ` : ''}
+        <div class="card-meta">🕒 Submitted: ${new Date(req.submittedAt).toLocaleString()}</div>
+        ${isPending ? `
+          <div class="btn-group" style="margin-top: 16px;">
+            <button class="btn success" onclick="handleApprove('${req.studentReg}', '${req.submittedAt}')">✓ Approve</button>
+            <button class="btn danger" onclick="handleReject('${req.studentReg}', '${req.submittedAt}')">✕ Reject</button>
+          </div>
+        ` : `
+          ${req.approvedBy ? `<div class="card-meta" style="color: var(--success); margin-top: 8px;">✓ Approved by: ${req.approvedBy} on ${new Date(req.approvedAt).toLocaleDateString()}</div>` : ''}
+          ${req.rejectedBy ? `<div class="card-meta" style="color: var(--danger); margin-top: 8px;">✕ Rejected by: ${req.rejectedBy} on ${new Date(req.rejectedAt).toLocaleDateString()}</div>` : ''}
+        `}
+      </div>
+    `;
+  }).join('');
+  showLoading(false);
+}
+
+function handleApprove(studentReg, submittedAt) {
+  if (confirm('Are you sure you want to APPROVE this leave request?')) {
+    approveRequest(studentReg, submittedAt);
+  }
+}
+
+function handleReject(studentReg, submittedAt) {
+  if (confirm('Are you sure you want to REJECT this leave request?')) {
+    rejectRequest(studentReg, submittedAt);
+  }
+}
+
+async function approveRequest(studentReg, submittedAt) {
+  showLoading();
+  try {
+    const updated = await DB.update('leaveRequests', 
+      r => r.studentReg === studentReg && r.submittedAt === submittedAt,
+      { 
+        status: 'approved', 
+        approvedBy: currentUser.name, 
+        approvedAt: new Date().toISOString() 
+      }
+    );
+    
+    if (updated) {
+      await updateTeacherStats();
+      await displayTeacherRequests();
+      showNotification('Leave request approved successfully!', 'success');
+    } else {
+      alert('Failed to find the request. Please refresh the page.');
+    }
+  } catch (error) {
+    console.error('Approve error:', error);
+    alert('Failed to approve request. Please try again.');
+  }
+  showLoading(false);
+}
+
+async function rejectRequest(studentReg, submittedAt) {
+  showLoading();
+  try {
+    const updated = await DB.update('leaveRequests',
+      r => r.studentReg === studentReg && r.submittedAt === submittedAt,
+      { 
+        status: 'rejected', 
+        rejectedBy: currentUser.name, 
+        rejectedAt: new Date().toISOString() 
+      }
+    );
+    
+    if (updated) {
+      await updateTeacherStats();
+      await displayTeacherRequests();
+      showNotification('Leave request rejected', 'warning');
+    } else {
+      alert('Failed to find the request. Please refresh the page.');
+    }
+  } catch (error) {
+    console.error('Reject error:', error);
+    alert('Failed to reject request. Please try again.');
+  }
+  showLoading(false);
+}
+
+function showLeaveForm() {
+  document.getElementById('leaveFormSection').style.display = 'block';
+  document.getElementById('leaveDate').value = '';
+  document.getElementById('leaveReason').value = '';
+  document.getElementById('proofFile').value = '';
+  document.getElementById('parentLetter').value = '';
+  document.getElementById('leaveMsg').innerHTML = '';
+}
+
+function hideLeaveForm() {
+  document.getElementById('leaveFormSection').style.display = 'none';
+}
+
+async function submitLeaveRequest() {
+  const date = document.getElementById('leaveDate').value;
+  const reason = document.getElementById('leaveReason').value.trim();
+  const proofFile = document.getElementById('proofFile').files[0];
+  const parentLetter = document.getElementById('parentLetter').files[0];
+  
+  if (!date || !reason) {
+    showMessage('leaveMsg', 'Please fill all required fields', 'error');
+    return;
+  }
+  
+  if (reason.length < 10) {
+    showMessage('leaveMsg', 'Please provide a detailed reason (minimum 10 characters)', 'error');
+    return;
+  }
+  
+  // File size validation (5MB max)
+  if (proofFile && proofFile.size > 5 * 1024 * 1024) {
+    showMessage('leaveMsg', 'Proof file is too large. Maximum size is 5MB', 'error');
+    return;
+  }
+  
+  if (parentLetter && parentLetter.size > 5 * 1024 * 1024) {
+    showMessage('leaveMsg', 'Parent letter file is too large. Maximum size is 5MB', 'error');
+    return;
+  }
+  
+  showLoading();
+  
+  try {
+    const leaveData = {
+      id: Date.now(),
+      studentReg: currentUser.reg,
+      studentName: currentUser.name,
+      date: date,
+      reason: reason,
+      status: 'pending',
+      submittedAt: new Date().toISOString()
+    };
+    
+    // Convert files to base64 for storage
+    if (proofFile) {
+      const proofData = await fileToBase64(proofFile);
+      leaveData.proofFile = {
+        name: proofFile.name,
+        type: proofFile.type,
+        data: proofData
+      };
+    }
+    
+    if (parentLetter) {
+      const letterData = await fileToBase64(parentLetter);
+      leaveData.parentLetter = {
+        name: parentLetter.name,
+        type: parentLetter.type,
+        data: letterData
+      };
+    }
+    
+    await DB.insert('leaveRequests', leaveData);
+    
+    showMessage('leaveMsg', 'Leave request submitted successfully!', 'success');
+    setTimeout(async () => {
+      hideLeaveForm();
+      await updateLeaveStats();
+      await displayLeaveRequests();
+    }, 1500);
+  } catch (error) {
+    console.error('Submit error:', error);
+    showMessage('leaveMsg', 'Failed to submit request. Please try again.', 'error');
+  }
+  
+  showLoading(false);
+}
+
+// Helper function to convert file to base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Helper function to view uploaded files
+function viewFile(dataUrl, fileName) {
+  const newWindow = window.open();
+  if (fileName.toLowerCase().endsWith('.pdf')) {
+    newWindow.document.write(`
+      <html>
+        <head><title>${fileName}</title></head>
+        <body style="margin:0">
+          <embed src="${dataUrl}" width="100%" height="100%" type="application/pdf">
+        </body>
+      </html>
+    `);
+  } else {
+    newWindow.document.write(`
+      <html>
+        <head><title>${fileName}</title></head>
+        <body style="margin:0; display:flex; justify-content:center; align-items:center; background:#000;">
+          <img src="${dataUrl}" style="max-width:100%; max-height:100vh;">
+        </body>
+      </html>
+    `);
+  }
+}
+
+function showChangePassword(type) {
+  previousPage = type === 'student' ? 'studentPortal' : 'teacherPortal';
+  showPage('changePasswordModal');
+  document.getElementById('currentPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('confirmPass').value = '';
+  document.getElementById('changePassMsg').innerHTML = '';
+}
+
+function hideChangePassword() {
+  showPage(previousPage);
+}
+
+async function changePassword() {
+  const currentPass = document.getElementById('currentPass').value;
+  const newPass = document.getElementById('newPass').value;
+  const confirmPass = document.getElementById('confirmPass').value;
+  
+  if (!currentPass || !newPass || !confirmPass) {
+    showMessage('changePassMsg', 'Please fill all fields', 'error');
+    return;
+  }
+  
+  if (currentUser.pass !== currentPass) {
+    showMessage('changePassMsg', 'Current password is incorrect', 'error');
+    return;
+  }
+  
+  if (newPass.length < 4) {
+    showMessage('changePassMsg', 'New password must be at least 4 characters', 'error');
+    return;
+  }
+  
+  if (newPass !== confirmPass) {
+    showMessage('changePassMsg', 'New passwords do not match', 'error');
+    return;
+  }
+  
+  showLoading();
+  
+  try {
+    if (userType === 'student') {
+      await DB.update('students', s => s.reg === currentUser.reg, { pass: newPass });
+    } else {
+      await DB.update('teachers', t => t.phone === currentUser.phone, { pass: newPass });
+    }
+    
+    currentUser.pass = newPass;
+    
+    showMessage('changePassMsg', 'Password changed successfully!', 'success');
+    setTimeout(() => {
+      hideChangePassword();
+    }, 2000);
+  } catch (error) {
+    showMessage('changePassMsg', 'Failed to change password. Please try again.', 'error');
+  }
+  
+  showLoading(false);
+}
+
+function logout() {
+  currentUser = null;
+  userType = null;
+  showPage('home');
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = 'message ' + type;
+  const icon = type === 'success' ? '✓' : type === 'warning' ? '⚠️' : '✕';
+  notification.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.left = '50%';
+  notification.style.transform = 'translateX(-50%)';
+  notification.style.zIndex = '9999';
+  notification.style.minWidth = '300px';
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
+}
+
+window.onload = function() {
+  const today = new Date().toISOString().split('T')[0];
+  const leaveDateInput = document.getElementById('leaveDate');
+  if (leaveDateInput) {
+    leaveDateInput.setAttribute('min', today);
+  }
+  
+  console.log('🎓 Smart Campus System Initialized');
+  console.log('✨ Modern HR-Attractive Design Loaded');
+}
+</script>
+</body>
+</html>
